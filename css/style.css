@@ -1,0 +1,191 @@
+    .toggleNotifications {
+        margin-right: 8px;
+        position: relative;
+        display: -webkit-inline-box;
+        display: -ms-inline-flexbox;
+        display: inline-flex;
+        float: right;
+        height: 28px;
+        width: 28px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        cursor: pointer;
+    }
+    
+    .toggleNotifications .show {
+        -webkit-box-flex: 1;
+        -ms-flex: 1;
+        flex: 1;
+        margin: auto;
+        height: 28px;
+        max-width: 28px;
+        text-align: center;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.5);
+        font-size: 28px;
+        -webkit-transition: all 1s;
+        transition: all 1s;
+        cursor: pointer;
+    }
+    
+    .toggleNotifications .show:hover {
+        background: black;
+    }
+    
+    .toggleNotifications .show i {
+        line-height: 28px;
+        color: white;
+    }
+    
+    .count {
+        position: absolute;
+        top: -2px;
+        right: 7px;
+        cursor: pointer;
+    }
+    
+    .count .num {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        background: #f22;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        text-align: center;
+        line-height: 17px;
+        font-size: 11px;
+        -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
+        box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(70, 70, 70, 0.2);
+        -webkit-transition: all 0.3s;
+        transition: all 0.3s;
+        color: white;
+    }
+    
+    .notifications {
+        position: fixed;
+        /* Pull from https://github.com/allipierre */
+        top: 42px;
+        right: 10px;
+        width: 400px;
+        background: rgba(250, 250, 250, 1);
+        border-radius: 2px;
+        -webkit-box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.5);
+        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        max-height: 75vh;
+        overflow: auto;
+    }
+    
+    @media only screen and (max-width: 680px) {
+        .notifications {
+            width: 85vw;
+            max-width: 400px;
+        }
+    }
+    
+    .notificationstoggle {
+        display: none;
+    }
+    /* .notifications:after {
+        content: ' ';
+        position: absolute;
+        top: -20px;
+        right: 0px;
+        width: 0px;
+        height: 10px;
+        border-right: 10px solid transparent;
+        border-left: 10px solid transparent;
+        border-bottom: 10px solid rgba(250, 250, 250, 0.8);
+        pointer-events: none;
+    }
+    .notifications:before {
+        content: ' ';
+        position: absolute;
+        top: -21px;
+        right: 0px;
+        width: 0px;
+        height: 10px;
+        border-right: 10px solid transparent;
+        border-left: 10px solid transparent;
+        border-bottom: 10px solid rgba(250, 250, 250, 0.8);
+        pointer-events: none;
+    }*/
+    
+    .notifications .note {
+        margin: 0 5px;
+        border-bottom: 1px solid rgb(230, 230, 230);
+        line-height: 10px;
+        -webkit-transition: all 0.2s;
+        transition: all 0.2s;
+        overflow: hidden;
+        color: rgb(70, 70, 70);
+        padding-left: 5px;
+    }
+    
+    .notifications .note .note-info {
+        display: block;
+        padding: 0 30px 20px 40px;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        -ms-hyphens: auto;
+        -moz-hyphens: auto;
+        -webkit-hyphens: auto;
+        hyphens: auto;
+        width: 100%;
+        line-height: 20px;
+    }
+    
+    @keyframes fa-blink {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+    
+    .fa-blink {
+        -webkit-animation: fa-blink 2s linear infinite;
+        -moz-animation: fa-blink 2s linear infinite;
+        -ms-animation: fa-blink 2s linear infinite;
+        -o-animation: fa-blink 2s linear infinite;
+        animation: fa-blink 2s linear infinite;
+    }
+    
+    .notifications a {
+        text-decoration: none
+    }
+    
+    .notifications .note .note-header {
+        font-weight: bold;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        width: 100%;
+        padding-right: 10px;
+        line-height: 40px;
+    }
+    
+    .notifications .note:first-of-type {
+        margin-top: 0px;
+    }
+    
+    .notifications .note:hover {
+        box-shadow: -5px 0px 0px 0px rgb(70, 70, 70) !important;
+    }
+    
+    .notifications .note .note-header i {
+        position: relative;
+        top: -1px;
+        margin-right: 10px;
+        vertical-align: middle;
+        width: 30px;
+        text-align: center;
+    }

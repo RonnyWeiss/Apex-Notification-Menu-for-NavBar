@@ -1,0 +1,11 @@
+.toggleNotifications .show i {
+    font-size: 16px;
+}
+
+.toggleNotifications .show {
+    font-size: 24px !important;
+}
+
+.toggleNotifications {
+margin-top: 5px;
+}
