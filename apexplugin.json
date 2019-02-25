@@ -12,6 +12,7 @@
     "author": {
         "name": "Ronny Weiß",
         "email": "wronny@gmx.de",
+        "twitter": "ronny_weiss_",
         "donationUrl": "https://www.paypal.me/RonnyW1"
     },
     "repository": {
@@ -19,9 +20,9 @@
         "url": "https://github.com/RonnyWeiss/Apex-Notification-Menu-for-NavBar.git"
     },
     "oracle": {
-        "versions": ["11.2.0.1", "12.1.0.1", "12.2.0.1", "18.1"],
+        "versions": ["11.2.0.1", "12.1.0.1", "12.2.0.1", "18.4.0.0"],
         "apex": {
-            "versions": ["5.1.1", "5.1.2", "5.1.3", "5.1.4", "18.1"],
+            "versions": ["5.1.3", "18.1.0.00.45", "18.2.0.00.12"],
             "plugin": {
                 "internalName": "APEX.NOTIFICATION",
                 "type": "dynamic action",
