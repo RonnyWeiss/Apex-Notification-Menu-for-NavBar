@@ -13,7 +13,7 @@
         user-select: none;
         cursor: pointer;
     }
-    
+
     .toggleNotifications .show {
         -webkit-box-flex: 1;
         -ms-flex: 1;
@@ -29,23 +29,23 @@
         transition: all 1s;
         cursor: pointer;
     }
-    
+
     .toggleNotifications .show:hover {
         background: black;
     }
-    
+
     .toggleNotifications .show i {
         line-height: 28px;
         color: white;
     }
-    
+
     .count {
         position: absolute;
         top: -2px;
         right: 7px;
         cursor: pointer;
     }
-    
+
     .count .num {
         position: absolute;
         top: 0px;
@@ -64,7 +64,7 @@
         transition: all 0.3s;
         color: white;
     }
-    
+
     .notifications {
         position: fixed;
         /* Pull from https://github.com/allipierre */
@@ -79,17 +79,18 @@
         max-height: 75vh;
         overflow: auto;
     }
-    
+
     @media only screen and (max-width: 680px) {
         .notifications {
             width: 85vw;
             max-width: 400px;
         }
     }
-    
+
     .notificationstoggle {
         display: none;
     }
+
     /* .notifications:after {
         content: ' ';
         position: absolute;
@@ -114,7 +115,7 @@
         border-bottom: 10px solid rgba(250, 250, 250, 0.8);
         pointer-events: none;
     }*/
-    
+
     .notifications .note {
         margin: 0 5px;
         border-bottom: 1px solid rgb(230, 230, 230);
@@ -124,8 +125,22 @@
         overflow: hidden;
         color: rgb(70, 70, 70);
         padding-left: 5px;
+        position: relative;
     }
-    
+
+    .notifications .note .accept-a {
+        position: absolute;
+        bottom: 10px;
+        right: 5px;
+        font-size: 26px;
+    }
+
+    .notifications .note .decline-a {
+        position: absolute;
+        bottom: 40px;
+        right: 5px;
+    }
+
     .notifications .note .note-info {
         display: block;
         padding: 0 30px 20px 40px;
@@ -138,19 +153,21 @@
         width: 100%;
         line-height: 20px;
     }
-    
+
     @keyframes fa-blink {
         0% {
             opacity: 1;
         }
+
         50% {
             opacity: 0;
         }
+
         100% {
             opacity: 1;
         }
     }
-    
+
     .fa-blink {
         -webkit-animation: fa-blink 2s linear infinite;
         -moz-animation: fa-blink 2s linear infinite;
@@ -158,11 +175,11 @@
         -o-animation: fa-blink 2s linear infinite;
         animation: fa-blink 2s linear infinite;
     }
-    
+
     .notifications a {
         text-decoration: none
     }
-    
+
     .notifications .note .note-header {
         font-weight: bold;
         text-overflow: ellipsis;
@@ -172,15 +189,15 @@
         padding-right: 10px;
         line-height: 40px;
     }
-    
+
     .notifications .note:first-of-type {
         margin-top: 0px;
     }
-    
+
     .notifications .note:hover {
         box-shadow: -5px 0px 0px 0px rgb(70, 70, 70) !important;
     }
-    
+
     .notifications .note .note-header i {
         position: relative;
         top: -1px;

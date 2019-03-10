@@ -1,6 +1,6 @@
 var notificationMenu = (function () {
     "use strict";
-    var scriptVersion = "1.3.1";
+    var scriptVersion = "1.4";
     var util = {
         version: "1.0.5",
         isAPEX: function () {
@@ -108,7 +108,16 @@ var notificationMenu = (function () {
                 "showAlways": false,
                 "browserNotifications": {
                     "enabled": true,
-                    "cutBodyTextAfter": 100
+                    "cutBodyTextAfter": 100,
+                    "link": false
+                },
+                "accept": {
+                    "color": "#44e55c",
+                    "icon": "fa-check"
+                },
+                "decline": {
+                    "color": "#b73a21",
+                    "icon": "fa-close"
                 }
             };
             var configJSON = {};
@@ -352,8 +361,10 @@ var notificationMenu = (function () {
                                             body: text,
                                             requireInteraction: configJSON.browserNotifications.requireInteraction
                                         });
-                                        notification.onclick = function (event) {
-                                            util.link(data.NOTE_LINK)
+                                        if (configJSON.browserNotifications.link && data.NOTE_LINK) {
+                                            notification.onclick = function (event) {
+                                                util.link(data.NOTE_LINK)
+                                            }
                                         }
                                     } else if (Notification.permission !== 'denied') {
                                         Notification.requestPermission(function (permission) {
@@ -407,6 +418,39 @@ var notificationMenu = (function () {
                         li.addClass("note");
                         if (data.NOTE_COLOR) {
                             li.css("box-shadow", "-5px 0 0 0 " + data.NOTE_COLOR);
+                        }
+
+                        if (data.NOTE_ACCEPT || data.NOTE_DECLINE) {
+                            li.css("padding-right", "32px");
+
+                            if (data.NOTE_ACCEPT) {
+                                var acceptA = $("<a></a>");
+                                acceptA.addClass("accept-a");
+                                acceptA.attr("href", data.NOTE_ACCEPT);
+
+                                var acceptI = $("<i></i>");
+                                acceptI.addClass("fa");
+                                acceptI.addClass(configJSON.accept.icon);
+                                acceptI.css("color", configJSON.accept.color);
+                                acceptI.css("font-size", "26px");
+                                acceptA.append(acceptI);
+
+                                li.append(acceptA);
+                            }
+                            if (data.NOTE_DECLINE) {
+                                var declineA = $("<a></a>");
+                                declineA.addClass("decline-a");
+                                declineA.attr("href", data.NOTE_DECLINE);
+
+                                var declineI = $("<i></i>");
+                                declineI.addClass("fa");
+                                declineI.addClass(configJSON.decline.icon);
+                                declineI.css("color", configJSON.decline.color);
+                                declineI.css("font-size", "28px");
+                                declineA.append(declineI);
+
+                                li.append(declineA);
+                            }
                         }
 
                         var noteHeader = $("<div></div>");
