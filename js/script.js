@@ -432,7 +432,7 @@ var notificationMenu = (function () {
                                 acceptI.addClass("fa");
                                 acceptI.addClass(configJSON.accept.icon);
                                 acceptI.css("color", configJSON.accept.color);
-                                acceptI.css("font-size", "26px");
+                                acceptI.css("font-size", "20px");
                                 acceptA.append(acceptI);
 
                                 li.append(acceptA);
@@ -446,7 +446,7 @@ var notificationMenu = (function () {
                                 declineI.addClass("fa");
                                 declineI.addClass(configJSON.decline.icon);
                                 declineI.css("color", configJSON.decline.color);
-                                declineI.css("font-size", "28px");
+                                declineI.css("font-size", "24px");
                                 declineA.append(declineI);
 
                                 li.append(declineA);
