@@ -1,6 +1,6 @@
 var notificationMenu = (function () {
     "use strict";
-    var scriptVersion = "1.3";
+    var scriptVersion = "1.3.1";
     var util = {
         version: "1.0.5",
         isAPEX: function () {
@@ -75,6 +75,21 @@ var notificationMenu = (function () {
                 console.error(finalConfig);
             }
             return finalConfig;
+        },
+        link: function (link) {
+            return window.location = link;
+        },
+        cutString: function (text, textLength) {
+            try {
+                if (textLength < 0) return text;
+                else {
+                    return (text.length > textLength) ?
+                        text.substring(0, textLength - 3) + "..." :
+                        text
+                }
+            } catch (e) {
+                return text;
+            }
         }
     };
 
@@ -89,9 +104,12 @@ var notificationMenu = (function () {
                 "mainIconBlinking": false,
                 "counterBackgroundColor": "rgb(232, 55, 55 )",
                 "counterFontColor": "white",
-                "linkTargetBlank": true,
+                "linkTargetBlank": false,
                 "showAlways": false,
-                "useBrowserNotificationAPI": true
+                "browserNotifications": {
+                    "enabled": true,
+                    "cutBodyTextAfter": 100
+                }
             };
             var configJSON = {};
             configJSON = util.jsonSaveExtend(stdConfigJSON, udConfigJSON);
@@ -100,7 +118,7 @@ var notificationMenu = (function () {
             /* define container and add it to parent */
             var container = drawContainer(elementID);
 
-            if (configJSON.useBrowserNotificationAPI) {
+            if (configJSON.browserNotifications.enabled) {
                 try {
                     if (!("Notification" in window)) {
                         util.debug.error("This browser does not support system notifications");
@@ -313,27 +331,67 @@ var notificationMenu = (function () {
                 }
 
                 if (dataJSON.row) {
-                    for (var item = 0; item < dataJSON.row.length; item++) {
+                    $.each(dataJSON.row, function (item, data) {
+                        if (configJSON.browserNotifications.enabled) {
+                            try {
+                                /* fire notification after timeout for better browser usability */
+                                setTimeout(function () {
+                                    if (!("Notification" in window)) {
+                                        util.debug.Error("This browser does not support system notifications");
+                                    } else if (Notification.permission === "granted") {
+                                        var title, text;
+                                        if (data.NOTE_HEADER) {
+                                            title = $("<div/>").html(data.NOTE_HEADER).text();
+                                        }
+                                        if (data.NOTE_TEXT) {
+                                            text = $("<div/>").html(data.NOTE_TEXT).text();
+                                            text = util.cutString(text, configJSON.browserNotifications.cutBodyTextAfter);
+                                        }
+
+                                        var notification = new Notification(title, {
+                                            body: text,
+                                            requireInteraction: configJSON.browserNotifications.requireInteraction
+                                        });
+                                        notification.onclick = function (event) {
+                                            util.link(data.NOTE_LINK)
+                                        }
+                                    } else if (Notification.permission !== 'denied') {
+                                        Notification.requestPermission(function (permission) {
+                                            if (permission === "granted") {
+                                                var notification = new Notification(title, {
+                                                    body: text,
+                                                    requireInteraction: configJSON.browserNotifications.requireInteraction
+                                                });
+                                            }
+                                        });
+                                    }
+                                }, 150 * item);
+                            } catch (e) {
+                                util.debug.error("Error while try to get notification permission");
+                                util.debug.error(e);
+                            }
+                        }
+
                         if (escapeRequired !== false) {
                             /* escape data */
-                            if (dataJSON.row[item].NOTE_HEADER) {
-                                dataJSON.row[item].NOTE_HEADER = util.escapeHTML(dataJSON.row[item].NOTE_HEADER);
+                            if (data.NOTE_HEADER) {
+                                data.NOTE_HEADER = util.escapeHTML(data.NOTE_HEADER);
                             }
-                            if (dataJSON.row[item].NOTE_ICON) {
-                                dataJSON.row[item].NOTE_ICON = util.escapeHTML(dataJSON.row[item].NOTE_ICON);
+                            if (data.NOTE_ICON) {
+                                data.NOTE_ICON = util.escapeHTML(data.NOTE_ICON);
                             }
-                            if (dataJSON.row[item].NOTE_ICON_COLOR) {
-                                dataJSON.row[item].NOTE_ICON_COLOR = util.escapeHTML(dataJSON.row[item].NOTE_ICON_COLOR);
+                            if (data.NOTE_ICON_COLOR) {
+                                data.NOTE_ICON_COLOR = util.escapeHTML(data.NOTE_ICON_COLOR);
                             }
-                            if (dataJSON.row[item].NOTE_TEXT) {
-                                dataJSON.row[item].NOTE_TEXT = util.escapeHTML(dataJSON.row[item].NOTE_TEXT);
+                            if (data.NOTE_TEXT) {
+                                data.NOTE_TEXT = util.escapeHTML(data.NOTE_TEXT);
                             }
                         }
 
                         var a = $("<a></a>");
 
-                        if (dataJSON.row[item].NOTE_LINK) {
-                            a.attr("href", dataJSON.row[item].NOTE_LINK);
+                        if (data.NOTE_LINK) {
+                            a.attr("href", data.NOTE_LINK);
                             if (configJSON.linkTargetBlank) {
                                 a.attr("target", "_blank");
                             }
@@ -347,8 +405,8 @@ var notificationMenu = (function () {
 
                         var li = $("<li></li>");
                         li.addClass("note");
-                        if (dataJSON.row[item].NOTE_COLOR) {
-                            li.css("box-shadow", "-5px 0 0 0 " + dataJSON.row[item].NOTE_COLOR);
+                        if (data.NOTE_COLOR) {
+                            li.css("box-shadow", "-5px 0 0 0 " + data.NOTE_COLOR);
                         }
 
                         var noteHeader = $("<div></div>");
@@ -356,61 +414,35 @@ var notificationMenu = (function () {
 
                         var i = $("<i></i>");
                         i.addClass("fa");
-                        if (dataJSON.row[item].NOTE_ICON) {
-                            i.addClass(dataJSON.row[item].NOTE_ICON);
+                        if (data.NOTE_ICON) {
+                            i.addClass(data.NOTE_ICON);
                         }
-                        if (dataJSON.row[item].NOTE_ICON_COLOR) {
-                            i.css("color", dataJSON.row[item].NOTE_ICON_COLOR);
+                        if (data.NOTE_ICON_COLOR) {
+                            i.css("color", data.NOTE_ICON_COLOR);
                         }
                         i.addClass("fa-lg");
 
                         noteHeader.append(i);
-                        if (dataJSON.row[item].NOTE_HEADER) {
-                            noteHeader.append(dataJSON.row[item].NOTE_HEADER);
+                        if (data.NOTE_HEADER) {
+                            noteHeader.append(data.NOTE_HEADER);
                         }
                         li.append(noteHeader);
 
                         var span = $("<span></span>");
                         span.addClass("note-info");
-                        if (dataJSON.row[item].NOTE_TEXT) {
-                            span.html(dataJSON.row[item].NOTE_TEXT);
+                        if (data.NOTE_TEXT) {
+                            span.html(data.NOTE_TEXT);
                         }
                         li.append(span);
 
                         a.append(li);
 
                         ul.append(a);
+                    });
 
-                        if (configJSON.useBrowserNotificationAPI && dataJSON.row[item].BROWSER_NOTIFICATION && dataJSON.row[item].BROWSER_NOTIFICATION.length > 0) {
-                            str += "• " + dataJSON.row[item].BROWSER_NOTIFICATION + "\n";
-                        }
-                    }
                 }
 
                 $("body").append(ul);
-
-                if (configJSON.useBrowserNotificationAPI && str.length > 0) {
-                    try {
-                        if (!("Notification" in window)) {
-                            util.debug.Error("This browser does not support system notifications");
-                        } else if (Notification.permission === "granted") {
-                            var notification = new Notification("🔔", {
-                                body: str
-                            });
-                        } else if (Notification.permission !== 'denied') {
-                            Notification.requestPermission(function (permission) {
-                                if (permission === "granted") {
-                                    var notification = new Notification("🔔", {
-                                        body: str
-                                    });
-                                }
-                            });
-                        }
-                    } catch (e) {
-                        util.debug.error("Error while try to get notification permission");
-                        util.debug.error(e);
-                    }
-                }
             }
         }
     }
