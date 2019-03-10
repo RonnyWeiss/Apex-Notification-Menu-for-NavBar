@@ -1,6 +1,6 @@
 var notificationMenu = (function () {
     "use strict";
-    var scriptVersion = "1.2";
+    var scriptVersion = "1.3";
     var util = {
         version: "1.0.5",
         isAPEX: function () {
@@ -99,6 +99,14 @@ var notificationMenu = (function () {
             /* define container and add it to parent */
             var container = drawContainer(elementID);
 
+            if (configJSON.useBrowserNotificationAPI) {
+                if (!("Notification" in window)) {
+                    util.debug.error("This browser does not support system notifications");
+                } else {
+                    Notification.requestPermission();
+                }
+            }
+
             /* get data and draw */
             getData(drawBody);
 
@@ -137,7 +145,7 @@ var notificationMenu = (function () {
                                         NOTE_COLOR: "#FF0000"
                                         }]
                                 };
-                                console.log(d.responseText);
+                                util.debug.error(d.responseText);
                                 f(dataJSON);
                             },
                             dataType: "json"
@@ -146,8 +154,8 @@ var notificationMenu = (function () {
                     try {
                         drawBody(dataJSON);
                     } catch (e) {
-                        console.log("need data json");
-                        console.log(e);
+                        util.debug.error("need data json");
+                        util.debug.error(e);
                     }
                 }
             }
@@ -288,7 +296,7 @@ var notificationMenu = (function () {
              **
              ***********************************************************************/
             function drawList(div, dataJSON) {
-
+                var str = "";
                 var ul = $("<ul></ul>");
                 ul.attr("id", elementID + "_ul");
                 ul.addClass("notifications");
@@ -366,10 +374,32 @@ var notificationMenu = (function () {
                         a.append(li);
 
                         ul.append(a);
+
+                        if (configJSON.useBrowserNotificationAPI && dataJSON.row[item].BROWSER_NOTIFICATION && dataJSON.row[item].BROWSER_NOTIFICATION.length > 0) {
+                            str += "• " + dataJSON.row[item].BROWSER_NOTIFICATION + "\n\r";
+                        }
                     }
                 }
 
                 $("body").append(ul);
+
+                if (configJSON.useBrowserNotificationAPI && str.length > 0) {
+                    if (!("Notification" in window)) {
+                        util.debug.Error("This browser does not support system notifications");
+                    } else if (Notification.permission === "granted") {
+                        var notification = new Notification("🔔", {
+                            body: str
+                        });
+                    } else if (Notification.permission !== 'denied') {
+                        Notification.requestPermission(function (permission) {
+                            if (permission === "granted") {
+                                var notification = new Notification("🔔", {
+                                    body: str
+                                });
+                            }
+                        });
+                    }
+                }
             }
         }
     }
