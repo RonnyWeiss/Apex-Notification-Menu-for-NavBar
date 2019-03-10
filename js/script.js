@@ -343,20 +343,19 @@ var notificationMenu = (function () {
                     $.each(dataJSON.row, function (item, data) {
                         if (configJSON.browserNotifications.enabled) {
                             try {
+                                var title, text;
+                                if (data.NOTE_HEADER) {
+                                    title = $("<div/>").html(data.NOTE_HEADER).text();
+                                }
+                                if (data.NOTE_TEXT) {
+                                    text = $("<div/>").html(data.NOTE_TEXT).text();
+                                    text = util.cutString(text, configJSON.browserNotifications.cutBodyTextAfter);
+                                }
                                 /* fire notification after timeout for better browser usability */
                                 setTimeout(function () {
                                     if (!("Notification" in window)) {
                                         util.debug.Error("This browser does not support system notifications");
                                     } else if (Notification.permission === "granted") {
-                                        var title, text;
-                                        if (data.NOTE_HEADER) {
-                                            title = $("<div/>").html(data.NOTE_HEADER).text();
-                                        }
-                                        if (data.NOTE_TEXT) {
-                                            text = $("<div/>").html(data.NOTE_TEXT).text();
-                                            text = util.cutString(text, configJSON.browserNotifications.cutBodyTextAfter);
-                                        }
-
                                         var notification = new Notification(title, {
                                             body: text,
                                             requireInteraction: configJSON.browserNotifications.requireInteraction
@@ -373,6 +372,11 @@ var notificationMenu = (function () {
                                                     body: text,
                                                     requireInteraction: configJSON.browserNotifications.requireInteraction
                                                 });
+                                                if (configJSON.browserNotifications.link && data.NOTE_LINK) {
+                                                    notification.onclick = function (event) {
+                                                        util.link(data.NOTE_LINK)
+                                                    }
+                                                }
                                             }
                                         });
                                     }
