@@ -90,7 +90,8 @@ var notificationMenu = (function () {
                 "counterBackgroundColor": "rgb(232, 55, 55 )",
                 "counterFontColor": "white",
                 "linkTargetBlank": true,
-                "showAlways": false
+                "showAlways": false,
+                "useBrowserNotificationAPI": true
             };
             var configJSON = {};
             configJSON = util.jsonSaveExtend(stdConfigJSON, udConfigJSON);
@@ -100,10 +101,15 @@ var notificationMenu = (function () {
             var container = drawContainer(elementID);
 
             if (configJSON.useBrowserNotificationAPI) {
-                if (!("Notification" in window)) {
-                    util.debug.error("This browser does not support system notifications");
-                } else {
-                    Notification.requestPermission();
+                try {
+                    if (!("Notification" in window)) {
+                        util.debug.error("This browser does not support system notifications");
+                    } else {
+                        Notification.requestPermission();
+                    }
+                } catch (e) {
+                    util.debug.error("Error while try to get notification permission");
+                    util.debug.error(e);
                 }
             }
 
@@ -384,20 +390,26 @@ var notificationMenu = (function () {
                 $("body").append(ul);
 
                 if (configJSON.useBrowserNotificationAPI && str.length > 0) {
-                    if (!("Notification" in window)) {
-                        util.debug.Error("This browser does not support system notifications");
-                    } else if (Notification.permission === "granted") {
-                        var notification = new Notification("🔔", {
-                            body: str
-                        });
-                    } else if (Notification.permission !== 'denied') {
-                        Notification.requestPermission(function (permission) {
-                            if (permission === "granted") {
-                                var notification = new Notification("🔔", {
-                                    body: str
-                                });
-                            }
-                        });
+                    try {
+                        if (!("Notification" in window)) {
+                            util.debug.Error("This browser does not support system notifications");
+                        } else if (Notification.permission === "granted") {
+                            var notification = new Notification("🔔", {
+                                body: str
+                            });
+                        } else if (Notification.permission !== 'denied') {
+                            Notification.requestPermission(function (permission) {
+                                if (permission === "granted") {
+                                    var notification = new Notification("🔔", {
+                                        body: str
+                                    });
+                                }
+                            });
+                        }
+                    }
+                    ceatch(e) {
+                        util.debug.error("Error while try to get notification permission");
+                        util.debug.error(e);
                     }
                 }
             }
