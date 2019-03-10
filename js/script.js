@@ -376,7 +376,7 @@ var notificationMenu = (function () {
                         ul.append(a);
 
                         if (configJSON.useBrowserNotificationAPI && dataJSON.row[item].BROWSER_NOTIFICATION && dataJSON.row[item].BROWSER_NOTIFICATION.length > 0) {
-                            str += "• " + dataJSON.row[item].BROWSER_NOTIFICATION + "\n\r";
+                            str += "• " + dataJSON.row[item].BROWSER_NOTIFICATION + "\n";
                         }
                     }
                 }
