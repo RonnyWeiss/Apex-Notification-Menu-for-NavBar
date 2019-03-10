@@ -441,6 +441,9 @@ var notificationMenu = (function () {
                                 var declineA = $("<a></a>");
                                 declineA.addClass("decline-a");
                                 declineA.attr("href", data.NOTE_DECLINE);
+                                if (data.NOTE_ACCEPT) {
+                                    declineA.css("bottom", "40px");
+                                }
 
                                 var declineI = $("<i></i>");
                                 declineI.addClass("fa");
