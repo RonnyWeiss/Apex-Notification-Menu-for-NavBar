@@ -406,8 +406,7 @@ var notificationMenu = (function () {
                                 }
                             });
                         }
-                    }
-                    ceatch(e) {
+                    } catch (e) {
                         util.debug.error("Error while try to get notification permission");
                         util.debug.error(e);
                     }
