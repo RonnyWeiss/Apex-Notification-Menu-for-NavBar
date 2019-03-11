@@ -1,6 +1,6 @@
 var notificationMenu = (function () {
     "use strict";
-    var scriptVersion = "1.4";
+    var scriptVersion = "1.4.1";
     var util = {
         version: "1.0.5",
         isAPEX: function () {
@@ -89,6 +89,13 @@ var notificationMenu = (function () {
                 }
             } catch (e) {
                 return text;
+            }
+        },
+        removeHTML: function (pHTML) {
+            if (util.isAPEX() && apex.util && apex.util.stripHTML) {
+                return apex.util.stripHTML(pHTML);
+            } else {
+                return $("<div/>").html(pHTML).text();
             }
         }
     };
@@ -345,10 +352,10 @@ var notificationMenu = (function () {
                             try {
                                 var title, text;
                                 if (data.NOTE_HEADER) {
-                                    title = $("<div/>").html(data.NOTE_HEADER).text();
+                                    title = util.removeHTML(data.NOTE_HEADER);
                                 }
                                 if (data.NOTE_TEXT) {
-                                    text = $("<div/>").html(data.NOTE_TEXT).text();
+                                    text = util.removeHTML(data.NOTE_TEXT);
                                     text = util.cutString(text, configJSON.browserNotifications.cutBodyTextAfter);
                                 }
                                 /* fire notification after timeout for better browser usability */
