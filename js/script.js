@@ -1,6 +1,6 @@
 var notificationMenu = (function () {
     "use strict";
-    var scriptVersion = "1.4.1";
+    var scriptVersion = "1.5";
     var util = {
         version: "1.0.5",
         isAPEX: function () {
@@ -125,7 +125,8 @@ var notificationMenu = (function () {
                 "decline": {
                     "color": "#b73a21",
                     "icon": "fa-close"
-                }
+                },
+                "hideOnRefresh": true
             };
             var configJSON = {};
             configJSON = util.jsonSaveExtend(stdConfigJSON, udConfigJSON);
@@ -258,15 +259,16 @@ var notificationMenu = (function () {
                     $(ul).fadeToggle("fast");
                 });
 
-
-                $(document).on("touchstart click", function (e) {
-                    if ((!div.is(e.target) && div.has(e.target).length === 0) && !$(e.target).parents(ul).length > 0) {
-                        if (div.attr("toggled") == "false") {
-                            div.attr("toggled", true);
-                            $(ul).fadeToggle("fast");
+                if (configJSON.hideOnRefresh) {
+                    $(document).on("touchstart click", function (e) {
+                        if ((!div.is(e.target) && div.has(e.target).length === 0) && !$(e.target).parents(ul).length > 0) {
+                            if (div.attr("toggled") == "false") {
+                                div.attr("toggled", true);
+                                $(ul).fadeToggle("fast");
+                            }
                         }
-                    }
-                });
+                    });
+                }
 
                 var countDiv = $("<div></div>");
                 countDiv.addClass("count");
@@ -318,14 +320,14 @@ var notificationMenu = (function () {
                         $(toggleNote).show();
                         $(numDivID).show();
                         $(numDivID).text(dataJSON.row.length);
-                        $(ulID).remove();
+                        $(ulID).empty();
                         drawList($(toggleNote), dataJSON)
                     } else {
                         if (configJSON.showAlways) {
                             $(toggleNote).show();
                             $(numDivID).hide();
                         }
-                        $(ulID).remove();
+                        $(ulID).empty();
                     }
                 }
             }
@@ -337,60 +339,68 @@ var notificationMenu = (function () {
              ***********************************************************************/
             function drawList(div, dataJSON) {
                 var str = "";
-                var ul = $("<ul></ul>");
-                ul.attr("id", elementID + "_ul");
-                ul.addClass("notifications");
-                ul.addClass("notificationstoggle");
+                var ul;
+                if ($("#" + elementID + "_ul").length) {
+                    ul = $("#" + elementID + "_ul");
+                } else {
+                    ul = $("<ul></ul>");
+                    ul.attr("id", elementID + "_ul");
+                    ul.addClass("notifications");
+                    ul.addClass("notificationstoggle");
+                }
                 var toggleNote = "#" + elementID + "_toggleNote";
-                if ($(toggleNote).attr("toggled") == "false") {
+                console.log(configJSON.hideOnRefresh);
+                if ($(toggleNote).attr("toggled") == "false" && configJSON.hideOnRefresh) {
                     ul.toggle();
                 }
 
                 if (dataJSON.row) {
                     $.each(dataJSON.row, function (item, data) {
                         if (configJSON.browserNotifications.enabled) {
-                            try {
-                                var title, text;
-                                if (data.NOTE_HEADER) {
-                                    title = util.removeHTML(data.NOTE_HEADER);
-                                }
-                                if (data.NOTE_TEXT) {
-                                    text = util.removeHTML(data.NOTE_TEXT);
-                                    text = util.cutString(text, configJSON.browserNotifications.cutBodyTextAfter);
-                                }
-                                /* fire notification after timeout for better browser usability */
-                                setTimeout(function () {
-                                    if (!("Notification" in window)) {
-                                        util.debug.Error("This browser does not support system notifications");
-                                    } else if (Notification.permission === "granted") {
-                                        var notification = new Notification(title, {
-                                            body: text,
-                                            requireInteraction: configJSON.browserNotifications.requireInteraction
-                                        });
-                                        if (configJSON.browserNotifications.link && data.NOTE_LINK) {
-                                            notification.onclick = function (event) {
-                                                util.link(data.NOTE_LINK)
-                                            }
-                                        }
-                                    } else if (Notification.permission !== 'denied') {
-                                        Notification.requestPermission(function (permission) {
-                                            if (permission === "granted") {
-                                                var notification = new Notification(title, {
-                                                    body: text,
-                                                    requireInteraction: configJSON.browserNotifications.requireInteraction
-                                                });
-                                                if (configJSON.browserNotifications.link && data.NOTE_LINK) {
-                                                    notification.onclick = function (event) {
-                                                        util.link(data.NOTE_LINK)
-                                                    }
+                            if (data.NO_BROWSER_NOTIFICATION != 1) {
+                                try {
+                                    var title, text;
+                                    if (data.NOTE_HEADER) {
+                                        title = util.removeHTML(data.NOTE_HEADER);
+                                    }
+                                    if (data.NOTE_TEXT) {
+                                        text = util.removeHTML(data.NOTE_TEXT);
+                                        text = util.cutString(text, configJSON.browserNotifications.cutBodyTextAfter);
+                                    }
+                                    /* fire notification after timeout for better browser usability */
+                                    setTimeout(function () {
+                                        if (!("Notification" in window)) {
+                                            util.debug.Error("This browser does not support system notifications");
+                                        } else if (Notification.permission === "granted") {
+                                            var notification = new Notification(title, {
+                                                body: text,
+                                                requireInteraction: configJSON.browserNotifications.requireInteraction
+                                            });
+                                            if (configJSON.browserNotifications.link && data.NOTE_LINK) {
+                                                notification.onclick = function (event) {
+                                                    util.link(data.NOTE_LINK)
                                                 }
                                             }
-                                        });
-                                    }
-                                }, 150 * item);
-                            } catch (e) {
-                                util.debug.error("Error while try to get notification permission");
-                                util.debug.error(e);
+                                        } else if (Notification.permission !== 'denied') {
+                                            Notification.requestPermission(function (permission) {
+                                                if (permission === "granted") {
+                                                    var notification = new Notification(title, {
+                                                        body: text,
+                                                        requireInteraction: configJSON.browserNotifications.requireInteraction
+                                                    });
+                                                    if (configJSON.browserNotifications.link && data.NOTE_LINK) {
+                                                        notification.onclick = function (event) {
+                                                            util.link(data.NOTE_LINK)
+                                                        }
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }, 150 * item);
+                                } catch (e) {
+                                    util.debug.error("Error while try to get notification permission");
+                                    util.debug.error(e);
+                                }
                             }
                         }
 
