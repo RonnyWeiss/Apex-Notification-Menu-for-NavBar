@@ -1,6 +1,6 @@
 var notificationMenu = (function () {
     "use strict";
-    var scriptVersion = "1.5";
+    var scriptVersion = "1.5.1";
     var util = {
         version: "1.0.5",
         isAPEX: function () {
@@ -103,6 +103,7 @@ var notificationMenu = (function () {
     return {
 
         initialize: function (elementID, ajaxID, udConfigJSON, items2Submit, escapeRequired) {
+            var noAjaxError = true;
             var stdConfigJSON = {
                 "refresh": 0,
                 "mainIcon": "fa-bell",
@@ -170,6 +171,7 @@ var notificationMenu = (function () {
              **
              ***********************************************************************/
             function getData(f) {
+                noAjaxError = true;
                 if (ajaxID) {
                     apex.server.plugin(
                         ajaxID, {
@@ -187,6 +189,7 @@ var notificationMenu = (function () {
                                         }]
                                 };
                                 util.debug.error(d.responseText);
+                                noAjaxError = false;
                                 f(dataJSON);
                             },
                             dataType: "json"
@@ -356,7 +359,7 @@ var notificationMenu = (function () {
 
                 if (dataJSON.row) {
                     $.each(dataJSON.row, function (item, data) {
-                        if (configJSON.browserNotifications.enabled) {
+                        if (configJSON.browserNotifications.enabled && noAjaxError) {
                             if (data.NO_BROWSER_NOTIFICATION != 1) {
                                 try {
                                     var title, text;
