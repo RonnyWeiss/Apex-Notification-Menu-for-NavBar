@@ -1,6 +1,6 @@
 var notificationMenu = (function () {
     "use strict";
-    var scriptVersion = "1.5.2";
+    var scriptVersion = "1.5.1";
     var util = {
         version: "1.0.5",
         isAPEX: function () {
