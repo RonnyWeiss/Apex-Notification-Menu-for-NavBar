@@ -258,7 +258,9 @@ var notificationMenu = (function () {
 
                 $(document).on("touchstart click", function (e) {
                     if ((!div.is(e.target) && div.has(e.target).length === 0) && !$(e.target).parents(ul).length > 0) {
-                        $(ul).toggleClass("toggleList");
+                        if ($(ul).hasClass("toggleList") === false) {
+                            $(ul).toggleClass("toggleList");
+                        }
                     }
                 });
 
