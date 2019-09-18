@@ -1,6 +1,6 @@
 var notificationMenu = (function () {
     "use strict";
-    var scriptVersion = "1.5.1";
+    var scriptVersion = "1.5.2";
     var util = {
         version: "1.0.5",
         isAPEX: function () {
@@ -132,7 +132,6 @@ var notificationMenu = (function () {
             var configJSON = {};
             configJSON = util.jsonSaveExtend(stdConfigJSON, udConfigJSON);
 
-
             /* define container and add it to parent */
             var container = drawContainer(elementID);
 
@@ -248,30 +247,20 @@ var notificationMenu = (function () {
                 }
 
                 var div = $("<div></div>");
-
                 div.addClass("toggleNotifications");
-
                 div.attr("id", elementID + "_toggleNote");
-                div.attr("toggled", "true");
+
                 var ul = "#" + elementID + "_ul";
 
                 div.on("touchstart click", function () {
-                    var toggled = div.attr("toggled") == "false" ? "true" : "false";
-                    div.attr("toggled", toggled);
-
-                    $(ul).fadeToggle("fast");
+                    $(ul).toggleClass("toggleList");
                 });
 
-                if (configJSON.hideOnRefresh) {
-                    $(document).on("touchstart click", function (e) {
-                        if ((!div.is(e.target) && div.has(e.target).length === 0) && !$(e.target).parents(ul).length > 0) {
-                            if (div.attr("toggled") == "false") {
-                                div.attr("toggled", true);
-                                $(ul).fadeToggle("fast");
-                            }
-                        }
-                    });
-                }
+                $(document).on("touchstart click", function (e) {
+                    if ((!div.is(e.target) && div.has(e.target).length === 0) && !$(e.target).parents(ul).length > 0) {
+                        $(ul).toggleClass("toggleList");
+                    }
+                });
 
                 var countDiv = $("<div></div>");
                 countDiv.addClass("count");
@@ -343,18 +332,19 @@ var notificationMenu = (function () {
             function drawList(div, dataJSON) {
                 var str = "";
                 var ul;
+                var isRefresh = false;
                 if ($("#" + elementID + "_ul").length) {
                     ul = $("#" + elementID + "_ul");
+                    isRefresh = true;
                 } else {
                     ul = $("<ul></ul>");
                     ul.attr("id", elementID + "_ul");
                     ul.addClass("notifications");
-                    ul.addClass("notificationstoggle");
+                    ul.addClass("toggleList");
                 }
-                var toggleNote = "#" + elementID + "_toggleNote";
-                console.log(configJSON.hideOnRefresh);
-                if ($(toggleNote).attr("toggled") == "false" && configJSON.hideOnRefresh) {
-                    ul.toggle();
+
+                if (isRefresh && configJSON.hideOnRefresh && $(ul).hasClass("toggleList") === false) {
+                    $(ul).addClass("toggleList");
                 }
 
                 if (dataJSON.row) {
@@ -431,10 +421,7 @@ var notificationMenu = (function () {
                                 a.attr("target", "_blank");
                             }
                             a.on("touchstart click", function (e) {
-                                if (div.attr("toggled") == "false") {
-                                    div.attr("toggled", true);
-                                    $(ul).fadeToggle("fast");
-                                }
+                                $(ul).addClass("toggleList");
                             });
                         }
 
