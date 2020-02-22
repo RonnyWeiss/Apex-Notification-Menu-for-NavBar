@@ -1,8 +1,8 @@
 var notificationMenu = (function () {
     "use strict";
-    var scriptVersion = "1.5.2";
+    var scriptVersion = "1.6";
     var util = {
-        version: "1.0.5",
+        version: "1.2.4",
         isAPEX: function () {
             if (typeof (apex) !== 'undefined') {
                 return true;
@@ -53,21 +53,22 @@ var notificationMenu = (function () {
         },
         jsonSaveExtend: function (srcConfig, targetConfig) {
             var finalConfig = {};
+            var tmpJSON = {};
             /* try to parse config json when string or just set */
             if (typeof targetConfig === 'string') {
                 try {
-                    targetConfig = JSON.parse(targetConfig);
+                    tmpJSON = JSON.parse(targetConfig);
                 } catch (e) {
                     console.error("Error while try to parse targetConfig. Please check your Config JSON. Standard Config will be used.");
                     console.error(e);
                     console.error(targetConfig);
                 }
             } else {
-                finalConfig = targetConfig;
+                tmpJSON = targetConfig;
             }
             /* try to merge with standard if any attribute is missing */
             try {
-                finalConfig = $.extend(true, srcConfig, targetConfig);
+                finalConfig = $.extend(true, srcConfig, tmpJSON);
             } catch (e) {
                 console.error('Error while try to merge 2 JSONs into standard JSON if any attribute is missing. Please check your Config JSON. Standard Config will be used.');
                 console.error(e);
@@ -76,8 +77,12 @@ var notificationMenu = (function () {
             }
             return finalConfig;
         },
-        link: function (link) {
-            return window.location = link;
+        link: function (link, tabbed) {
+            if (tabbed) {
+                window.open(link, "_blank");
+            } else {
+                return window.location = link;
+            }
         },
         cutString: function (text, textLength) {
             try {
@@ -102,8 +107,9 @@ var notificationMenu = (function () {
 
     return {
 
-        initialize: function (elementID, ajaxID, udConfigJSON, items2Submit, escapeRequired) {
-            var noAjaxError = true;
+        initialize: function (elementID, ajaxID, udConfigJSON, items2Submit, escapeRequired, sanitize, sanitizerOptions) {
+            var timers;
+            var lastError = "";
             var stdConfigJSON = {
                 "refresh": 0,
                 "mainIcon": "fa-bell",
@@ -153,7 +159,10 @@ var notificationMenu = (function () {
 
             /* Used to set a refresh via json configuration */
             if (configJSON.refresh > 0) {
-                setInterval(function () {
+                timers = setInterval(function () {
+                    if ($("#" + elementID).length === 0) {
+                        clearInterval(timers);
+                    }
                     if (container.children("span").length == 0) {
                         if (ajaxID) {
                             getData(refreshBody);
@@ -166,11 +175,29 @@ var notificationMenu = (function () {
 
             /***********************************************************************
              **
+             ** function to escape of sanitize html
+             **
+             ***********************************************************************/
+            function escapeOrSanitizeHTML(pHTML) {
+                /* escape html if escape is set */
+                if (escapeRequired !== false) {
+                    return util.escapeHTML(pHTML);
+                } else {
+                    /* if sanitizer is activated sanitize html */
+                    if (sanitize !== false) {
+                        return DOMPurify.sanitize(pHTML, sanitizerOptions);
+                    } else {
+                        return pHTML;
+                    }
+                }
+            }
+
+            /***********************************************************************
+             **
              ** function to get data from Apex
              **
              ***********************************************************************/
             function getData(f) {
-                noAjaxError = true;
                 if (ajaxID) {
                     apex.server.plugin(
                         ajaxID, {
@@ -178,18 +205,22 @@ var notificationMenu = (function () {
                         }, {
                             success: f,
                             error: function (d) {
-                                var dataJSON = {
-                                    row: [{
-                                        NOTE_ICON: "fa-exclamation-triangle",
-                                        NOTE_ICON_COLOR: "#FF0000",
-                                        NOTE_HEADER: "Error occured!",
-                                        NOTE_TEXT: "Error occured while try to get new data.",
-                                        NOTE_COLOR: "#FF0000"
+                                if (d.responseJSON.error != lastError) {
+                                    lastError = d.responseJSON.error;
+                                    var dataJSON = {
+                                        row: [{
+                                            NOTE_ICON: "fa-exclamation-triangle",
+                                            NOTE_ICON_COLOR: "#FF0000",
+                                            NOTE_HEADER: "Error occured!",
+                                            NOTE_TEXT: d.responseJSON.error || "Error occured while try to get new data.",
+                                            NOTE_COLOR: "#FF0000"
                                         }]
-                                };
-                                util.debug.error(d.responseText);
-                                noAjaxError = false;
-                                f(dataJSON);
+                                    };
+
+                                    util.debug.error(d.responseText);
+                                    f(dataJSON);
+                                }
+
                             },
                             dataType: "json"
                         });
@@ -237,14 +268,11 @@ var notificationMenu = (function () {
              **
              ***********************************************************************/
             function drawBody(dataJSON) {
-                if (escapeRequired !== false) {
-                    /* escape config */
-                    configJSON.counterBackgroundColor = util.escapeHTML(configJSON.counterBackgroundColor);
-                    configJSON.counterFontColor = util.escapeHTML(configJSON.counterFontColor);
-                    configJSON.mainIcon = util.escapeHTML(configJSON.mainIcon);
-                    configJSON.mainIconBackgroundColor = util.escapeHTML(configJSON.mainIconBackgroundColor);
-                    configJSON.mainIconColor = util.escapeHTML(configJSON.mainIconColor);
-                }
+                configJSON.counterBackgroundColor = escapeOrSanitizeHTML(configJSON.counterBackgroundColor);
+                configJSON.counterFontColor = escapeOrSanitizeHTML(configJSON.counterFontColor);
+                configJSON.mainIcon = escapeOrSanitizeHTML(configJSON.mainIcon);
+                configJSON.mainIconBackgroundColor = escapeOrSanitizeHTML(configJSON.mainIconBackgroundColor);
+                configJSON.mainIconColor = escapeOrSanitizeHTML(configJSON.mainIconColor);
 
                 var div = $("<div></div>");
                 div.addClass("toggleNotifications");
@@ -351,7 +379,7 @@ var notificationMenu = (function () {
 
                 if (dataJSON.row) {
                     $.each(dataJSON.row, function (item, data) {
-                        if (configJSON.browserNotifications.enabled && noAjaxError) {
+                        if (configJSON.browserNotifications.enabled) {
                             if (data.NO_BROWSER_NOTIFICATION != 1) {
                                 try {
                                     var title, text;
@@ -399,20 +427,17 @@ var notificationMenu = (function () {
                             }
                         }
 
-                        if (escapeRequired !== false) {
-                            /* escape data */
-                            if (data.NOTE_HEADER) {
-                                data.NOTE_HEADER = util.escapeHTML(data.NOTE_HEADER);
-                            }
-                            if (data.NOTE_ICON) {
-                                data.NOTE_ICON = util.escapeHTML(data.NOTE_ICON);
-                            }
-                            if (data.NOTE_ICON_COLOR) {
-                                data.NOTE_ICON_COLOR = util.escapeHTML(data.NOTE_ICON_COLOR);
-                            }
-                            if (data.NOTE_TEXT) {
-                                data.NOTE_TEXT = util.escapeHTML(data.NOTE_TEXT);
-                            }
+                        if (data.NOTE_HEADER) {
+                            data.NOTE_HEADER = escapeOrSanitizeHTML(data.NOTE_HEADER);
+                        }
+                        if (data.NOTE_ICON) {
+                            data.NOTE_ICON = escapeOrSanitizeHTML(data.NOTE_ICON);
+                        }
+                        if (data.NOTE_ICON_COLOR) {
+                            data.NOTE_ICON_COLOR = escapeOrSanitizeHTML(data.NOTE_ICON_COLOR);
+                        }
+                        if (data.NOTE_TEXT) {
+                            data.NOTE_TEXT = escapeOrSanitizeHTML(data.NOTE_TEXT);
                         }
 
                         var a = $("<a></a>");

@@ -5,8 +5,8 @@
     "brackets-minifier.js-custom-path": "build",
     "brackets-minifier.css-custom-path": "build",
     "brackets-minifier.project-exclude": "",
-    "brackets-minifier.concat-js-filename": "script",
-    "brackets-minifier.concat-css-filename": "style",
+    "brackets-minifier.concat-js-filename": "anm.pkgd",
+    "brackets-minifier.concat-css-filename": "anm.pkgd",
     "brackets-minifier.uglifyjs-options": "{}",
     "brackets-minifier.cleancss-options": "{}"
 }
