@@ -1,6 +1,6 @@
 var notificationMenu = (function () {
     "use strict";
-    var scriptVersion = "1.6";
+    var scriptVersion = "1.6.1";
     var util = {
         version: "1.2.4",
         isAPEX: function () {
@@ -109,7 +109,8 @@ var notificationMenu = (function () {
 
         initialize: function (elementID, ajaxID, udConfigJSON, items2Submit, escapeRequired, sanitize, sanitizerOptions) {
             var timers;
-            var lastError = "";
+            var errCount = 0;
+
             var stdConfigJSON = {
                 "refresh": 0,
                 "mainIcon": "fa-bell",
@@ -135,6 +136,22 @@ var notificationMenu = (function () {
                 },
                 "hideOnRefresh": true
             };
+
+            /* this is the default json for purify js */
+            var sanitizeConfigJSON;
+            var stdSanatizerConfigJSON = {
+                "ALLOWED_ATTR": ["accesskey", "align", "alt", "always", "autocomplete", "autoplay", "border", "cellpadding", "cellspacing", "charset", "class", "dir", "height", "href", "id", "lang", "name", "rel", "required", "src", "style", "summary", "tabindex", "target", "title", "type", "value", "width"],
+                "ALLOWED_TAGS": ["a", "address", "b", "blockquote", "br", "caption", "code", "dd", "div", "dl", "dt", "em", "figcaption", "figure", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i", "img", "label", "li", "nl", "ol", "p", "pre", "s", "span", "strike", "strong", "sub", "sup", "table", "tbody", "td", "th", "thead", "tr", "u", "ul"]
+            };
+
+            if (sanitize !== false) {
+                if (sanitizerOptions) {
+                    sanitizeConfigJSON = util.jsonSaveExtend(stdSanatizerConfigJSON, sanitizerOptions);
+                } else {
+                    sanitizeConfigJSON = stdSanatizerConfigJSON;
+                }
+            }
+
             var configJSON = {};
             configJSON = util.jsonSaveExtend(stdConfigJSON, udConfigJSON);
 
@@ -163,6 +180,10 @@ var notificationMenu = (function () {
                     if ($("#" + elementID).length === 0) {
                         clearInterval(timers);
                     }
+                    /* stop timer after 3 loading errors occured */
+                    if (errCount >= 2) {
+                        clearInterval(timers);
+                    }
                     if (container.children("span").length == 0) {
                         if (ajaxID) {
                             getData(refreshBody);
@@ -185,7 +206,7 @@ var notificationMenu = (function () {
                 } else {
                     /* if sanitizer is activated sanitize html */
                     if (sanitize !== false) {
-                        return DOMPurify.sanitize(pHTML, sanitizerOptions);
+                        return DOMPurify.sanitize(pHTML, sanitizeConfigJSON);
                     } else {
                         return pHTML;
                     }
@@ -198,40 +219,36 @@ var notificationMenu = (function () {
              **
              ***********************************************************************/
             function getData(f) {
-                if (ajaxID) {
-                    apex.server.plugin(
-                        ajaxID, {
-                            pageItems: items2Submit
-                        }, {
-                            success: f,
-                            error: function (d) {
-                                if (d.responseJSON.error != lastError) {
-                                    lastError = d.responseJSON.error;
-                                    var dataJSON = {
-                                        row: [{
-                                            NOTE_ICON: "fa-exclamation-triangle",
-                                            NOTE_ICON_COLOR: "#FF0000",
-                                            NOTE_HEADER: "Error occured!",
-                                            NOTE_TEXT: d.responseJSON.error || "Error occured while try to get new data.",
-                                            NOTE_COLOR: "#FF0000"
-                                        }]
-                                    };
+                apex.server.plugin(
+                    ajaxID, {
+                        pageItems: items2Submit
+                    }, {
+                        success: function (d) {
+                            errCount = 0;
+                            f(d);
+                        },
+                        error: function (d) {
+                            if (errCount === 0) {
+                                var dataJSON = {
+                                    row: [{
+                                            "NOTE_ICON": "fa-exclamation-triangle",
+                                            "NOTE_ICON_COLOR": "#FF0000",
+                                            "NOTE_HEADER": (d.responseJSON && d.responseJSON.error) ? d.responseJSON.error : "Error occured",
+                                            "NOTE_TEXT": null,
+                                            "NOTE_COLOR": "#FF0000"
+                                    }
+                                ]
+                                };
 
+                                f(dataJSON);
+                                if (d.responseText) {
                                     util.debug.error(d.responseText);
-                                    f(dataJSON);
                                 }
-
-                            },
-                            dataType: "json"
-                        });
-                } else {
-                    try {
-                        drawBody(dataJSON);
-                    } catch (e) {
-                        util.debug.error("need data json");
-                        util.debug.error(e);
-                    }
-                }
+                            }
+                            errCount++;
+                        },
+                        dataType: "json"
+                    });
             }
 
             /***********************************************************************
@@ -248,11 +265,7 @@ var notificationMenu = (function () {
 
                 div.bind("apexrefresh", function () {
                     if (container.children("span").length == 0) {
-                        if (ajaxID) {
-                            getData(refreshBody);
-                        } else {
-                            refreshBody(dataJSON);
-                        }
+                        getData(refreshBody);
                     }
                 });
 
