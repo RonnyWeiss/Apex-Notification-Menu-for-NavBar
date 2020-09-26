@@ -1,8 +1,25 @@
 var notificationMenu = (function () {
     "use strict";
-    var scriptVersion = "1.6.1";
     var util = {
-        version: "1.2.4",
+        /**********************************************************************************
+         ** required functions 
+         *********************************************************************************/
+        featureInfo: {
+            name: "APEX Notification Menu",
+            info: {
+                scriptVersion: "1.6.2",
+                utilVersion: "1.3.5",
+                url: "https://github.com/RonnyWeiss",
+                license: "MIT"
+            }
+        },
+        isDefinedAndNotNull: function (pInput) {
+            if (typeof pInput !== "undefined" && pInput !== null && pInput != "") {
+                return true;
+            } else {
+                return false;
+            }
+        },
         isAPEX: function () {
             if (typeof (apex) !== 'undefined') {
                 return true;
@@ -10,20 +27,51 @@ var notificationMenu = (function () {
                 return false;
             }
         },
+        varType: function (pObj) {
+            if (typeof pObj === "object") {
+                var arrayConstructor = [].constructor;
+                var objectConstructor = ({}).constructor;
+                if (pObj.constructor === arrayConstructor) {
+                    return "array";
+                }
+                if (pObj.constructor === objectConstructor) {
+                    return "json";
+                }
+            } else {
+                return typeof pObj;
+            }
+        },
         debug: {
-            info: function (str) {
+            info: function () {
                 if (util.isAPEX()) {
-                    apex.debug.info(str);
+                    var i = 0;
+                    var arr = [];
+                    for (var prop in arguments) {
+                        arr[i] = arguments[prop];
+                        i++;
+                    }
+                    arr.push(util.featureInfo);
+                    apex.debug.info.apply(this, arr);
                 }
             },
-            error: function (str) {
+            error: function () {
+                var i = 0;
+                var arr = [];
+                for (var prop in arguments) {
+                    arr[i] = arguments[prop];
+                    i++;
+                }
+                arr.push(util.featureInfo);
                 if (util.isAPEX()) {
-                    apex.debug.error(str);
+                    apex.debug.error.apply(this, arr);
                 } else {
-                    console.error(str);
+                    console.error.apply(this, arr);
                 }
             }
         },
+        /**********************************************************************************
+         ** optinal functions 
+         *********************************************************************************/
         escapeHTML: function (str) {
             if (str === null) {
                 return null;
@@ -59,21 +107,25 @@ var notificationMenu = (function () {
                 try {
                     tmpJSON = JSON.parse(targetConfig);
                 } catch (e) {
-                    console.error("Error while try to parse targetConfig. Please check your Config JSON. Standard Config will be used.");
-                    console.error(e);
-                    console.error(targetConfig);
+                    util.debug.error({
+                        "msg": "Error while try to parse targetConfig. Please check your Config JSON. Standard Config will be used.",
+                        "err": e,
+                        "targetConfig": targetConfig
+                    });
                 }
             } else {
-                tmpJSON = targetConfig;
+                tmpJSON = $.extend(true, {}, targetConfig);
             }
             /* try to merge with standard if any attribute is missing */
             try {
-                finalConfig = $.extend(true, srcConfig, tmpJSON);
+                finalConfig = $.extend(true, {}, srcConfig, tmpJSON);
             } catch (e) {
-                console.error('Error while try to merge 2 JSONs into standard JSON if any attribute is missing. Please check your Config JSON. Standard Config will be used.');
-                console.error(e);
-                finalConfig = srcConfig;
-                console.error(finalConfig);
+                finalConfig = $.extend(true, {}, srcConfig);
+                util.debug.error({
+                    "msg": "Error while try to merge 2 JSONs into standard JSON if any attribute is missing. Please check your Config JSON. Standard Config will be used.",
+                    "err": e,
+                    "finalConfig": finalConfig
+                });
             }
             return finalConfig;
         },
@@ -81,7 +133,7 @@ var notificationMenu = (function () {
             if (tabbed) {
                 window.open(link, "_blank");
             } else {
-                return window.location = link;
+                return window.parent.location.href = link;
             }
         },
         cutString: function (text, textLength) {
