@@ -7,7 +7,7 @@ var notificationMenu = (function () {
         featureInfo: {
             name: "APEX Notification Menu",
             info: {
-                scriptVersion: "1.6.2",
+                scriptVersion: "1.6.3",
                 utilVersion: "1.3.5",
                 url: "https://github.com/RonnyWeiss",
                 license: "MIT"
