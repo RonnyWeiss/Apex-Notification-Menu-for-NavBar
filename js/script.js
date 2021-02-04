@@ -1,77 +1,13 @@
 var notificationMenu = (function () {
     "use strict";
     var util = {
-        /**********************************************************************************
-         ** required functions 
-         *********************************************************************************/
-        featureInfo: {
+        featureDetails: {
             name: "APEX Notification Menu",
-            info: {
-                scriptVersion: "1.6.3",
-                utilVersion: "1.3.5",
-                url: "https://github.com/RonnyWeiss",
-                license: "MIT"
-            }
+            scriptVersion: "1.6.4",
+            utilVersion: "1.4",
+            url: "https://github.com/RonnyWeiss",
+            license: "MIT"
         },
-        isDefinedAndNotNull: function (pInput) {
-            if (typeof pInput !== "undefined" && pInput !== null && pInput != "") {
-                return true;
-            } else {
-                return false;
-            }
-        },
-        isAPEX: function () {
-            if (typeof (apex) !== 'undefined') {
-                return true;
-            } else {
-                return false;
-            }
-        },
-        varType: function (pObj) {
-            if (typeof pObj === "object") {
-                var arrayConstructor = [].constructor;
-                var objectConstructor = ({}).constructor;
-                if (pObj.constructor === arrayConstructor) {
-                    return "array";
-                }
-                if (pObj.constructor === objectConstructor) {
-                    return "json";
-                }
-            } else {
-                return typeof pObj;
-            }
-        },
-        debug: {
-            info: function () {
-                if (util.isAPEX()) {
-                    var i = 0;
-                    var arr = [];
-                    for (var prop in arguments) {
-                        arr[i] = arguments[prop];
-                        i++;
-                    }
-                    arr.push(util.featureInfo);
-                    apex.debug.info.apply(this, arr);
-                }
-            },
-            error: function () {
-                var i = 0;
-                var arr = [];
-                for (var prop in arguments) {
-                    arr[i] = arguments[prop];
-                    i++;
-                }
-                arr.push(util.featureInfo);
-                if (util.isAPEX()) {
-                    apex.debug.error.apply(this, arr);
-                } else {
-                    console.error.apply(this, arr);
-                }
-            }
-        },
-        /**********************************************************************************
-         ** optinal functions 
-         *********************************************************************************/
         escapeHTML: function (str) {
             if (str === null) {
                 return null;
@@ -86,18 +22,7 @@ var notificationMenu = (function () {
                     /*do nothing */
                 }
             }
-            if (util.isAPEX()) {
-                return apex.util.escapeHTML(String(str));
-            } else {
-                str = String(str);
-                return str
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#x27;")
-                    .replace(/\//g, "&#x2F;");
-            }
+            return apex.util.escapeHTML(String(str));
         },
         jsonSaveExtend: function (srcConfig, targetConfig) {
             var finalConfig = {};
@@ -107,7 +32,8 @@ var notificationMenu = (function () {
                 try {
                     tmpJSON = JSON.parse(targetConfig);
                 } catch (e) {
-                    util.debug.error({
+                    apex.debug.error({
+                        "module": "util.js",
                         "msg": "Error while try to parse targetConfig. Please check your Config JSON. Standard Config will be used.",
                         "err": e,
                         "targetConfig": targetConfig
@@ -121,7 +47,8 @@ var notificationMenu = (function () {
                 finalConfig = $.extend(true, {}, srcConfig, tmpJSON);
             } catch (e) {
                 finalConfig = $.extend(true, {}, srcConfig);
-                util.debug.error({
+                apex.debug.error({
+                    "module": "util.js",
                     "msg": "Error while try to merge 2 JSONs into standard JSON if any attribute is missing. Please check your Config JSON. Standard Config will be used.",
                     "err": e,
                     "finalConfig": finalConfig
@@ -149,17 +76,32 @@ var notificationMenu = (function () {
             }
         },
         removeHTML: function (pHTML) {
-            if (util.isAPEX() && apex.util && apex.util.stripHTML) {
+            if (apex && apex.util && apex.util.stripHTML) {
                 return apex.util.stripHTML(pHTML);
             } else {
                 return $("<div/>").html(pHTML).text();
             }
-        }
+        },
     };
 
     return {
 
         initialize: function (elementID, ajaxID, udConfigJSON, items2Submit, escapeRequired, sanitize, sanitizerOptions) {
+
+            apex.debug.info({
+                "fct": util.featureDetails.name + " - " + "initialize",
+                "arguments": {
+                    "elementID": elementID,
+                    "ajaxID": ajaxID,
+                    "udConfigJSON": udConfigJSON,
+                    "items2Submit": items2Submit,
+                    "escapeRequired": escapeRequired,
+                    "sanitize": sanitize,
+                    "sanitizerOptions": sanitizerOptions
+                },
+                "featureDetails": util.featureDetails
+            });
+
             var timers;
             var errCount = 0;
 
@@ -213,13 +155,22 @@ var notificationMenu = (function () {
             if (configJSON.browserNotifications.enabled) {
                 try {
                     if (!("Notification" in window)) {
-                        util.debug.error("This browser does not support system notifications");
+                        apex.debug.error({
+                            "fct": util.featureDetails.name + " - " + "drawList",
+                            "msg": "This browser does not support system notifications",
+                            "err": e,
+                            "featureDetails": util.featureDetails
+                        });
                     } else {
                         Notification.requestPermission();
                     }
                 } catch (e) {
-                    util.debug.error("Error while try to get notification permission");
-                    util.debug.error(e);
+                    apex.debug.error({
+                        "fct": util.featureDetails.name + " - " + "initialize",
+                        "msg": "Error while try to get notification permission",
+                        "err": e,
+                        "featureDetails": util.featureDetails
+                    });
                 }
             }
 
@@ -270,14 +221,20 @@ var notificationMenu = (function () {
              ** function to get data from Apex
              **
              ***********************************************************************/
-            function getData(f) {
+            function getData(pCallback) {
                 apex.server.plugin(
                     ajaxID, {
                         pageItems: items2Submit
                     }, {
-                        success: function (d) {
+                        success: function (pData) {
+                            apex.debug.info({
+                                "fct": util.featureDetails.name + " - " + "getData",
+                                "msg": "AJAX data received",
+                                "pData": pData,
+                                "featureDetails": util.featureDetails
+                            });
                             errCount = 0;
-                            f(d);
+                            pCallback(pData);
                         },
                         error: function (d) {
                             if (errCount === 0) {
@@ -292,10 +249,13 @@ var notificationMenu = (function () {
                                 ]
                                 };
 
-                                f(dataJSON);
-                                if (d.responseText) {
-                                    util.debug.error(d.responseText);
-                                }
+                                pCallback(dataJSON);
+                                apex.debug.error({
+                                    "fct": util.featureDetails.name + " - " + "getData",
+                                    "msg": "AJAX data error",
+                                    "response": d,
+                                    "featureDetails": util.featureDetails
+                                });
                             }
                             errCount++;
                         },
@@ -345,11 +305,11 @@ var notificationMenu = (function () {
 
                 var ul = "#" + elementID + "_ul";
 
-                div.on("touchstart click", function () {
+                div.on("touch click", function () {
                     $(ul).toggleClass("toggleList");
                 });
 
-                $(document).on("touchstart click", function (e) {
+                $(document).on("touch click", function (e) {
                     if ((!div.is(e.target) && div.has(e.target).length === 0) && !$(e.target).parents(ul).length > 0) {
                         if ($(ul).hasClass("toggleList") === false) {
                             $(ul).toggleClass("toggleList");
@@ -458,7 +418,11 @@ var notificationMenu = (function () {
                                     /* fire notification after timeout for better browser usability */
                                     setTimeout(function () {
                                         if (!("Notification" in window)) {
-                                            util.debug.Error("This browser does not support system notifications");
+                                            apex.debug.error({
+                                                "fct": util.featureDetails.name + " - " + "drawList",
+                                                "msg": "This browser does not support system notifications",
+                                                "featureDetails": util.featureDetails
+                                            });
                                         } else if (Notification.permission === "granted") {
                                             var notification = new Notification(title, {
                                                 body: text,
@@ -486,8 +450,12 @@ var notificationMenu = (function () {
                                         }
                                     }, 150 * item);
                                 } catch (e) {
-                                    util.debug.error("Error while try to get notification permission");
-                                    util.debug.error(e);
+                                    apex.debug.error({
+                                        "fct": util.featureDetails.name + " - " + "drawList",
+                                        "msg": "Error while try to get notification permission",
+                                        "err": e,
+                                        "featureDetails": util.featureDetails
+                                    });
                                 }
                             }
                         }
@@ -512,7 +480,7 @@ var notificationMenu = (function () {
                             if (configJSON.linkTargetBlank) {
                                 a.attr("target", "_blank");
                             }
-                            a.on("touchstart click", function (e) {
+                            a.on("touch click", function (e) {
                                 $(ul).addClass("toggleList");
                             });
                         }

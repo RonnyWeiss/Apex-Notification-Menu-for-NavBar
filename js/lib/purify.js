@@ -1,4 +1,4 @@
-/*! @license DOMPurify | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/2.0.8/LICENSE */
+/*! @license DOMPurify | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/2.2.2/LICENSE */
 
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -44,10 +44,8 @@
   }
 
   var arrayForEach = unapply(Array.prototype.forEach);
-  var arrayIndexOf = unapply(Array.prototype.indexOf);
   var arrayPop = unapply(Array.prototype.pop);
   var arrayPush = unapply(Array.prototype.push);
-  var arraySlice = unapply(Array.prototype.slice);
 
   var stringToLowerCase = unapply(String.prototype.toLowerCase);
   var stringMatch = unapply(String.prototype.match);
@@ -123,7 +121,7 @@
     return newObject;
   }
 
-  var html = freeze(['a', 'abbr', 'acronym', 'address', 'area', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'big', 'blink', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'content', 'data', 'datalist', 'dd', 'decorator', 'del', 'details', 'dfn', 'dir', 'div', 'dl', 'dt', 'element', 'em', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meter', 'nav', 'nobr', 'ol', 'optgroup', 'option', 'output', 'p', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'select', 'shadow', 'small', 'source', 'spacer', 'span', 'strike', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr', 'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr']);
+  var html = freeze(['a', 'abbr', 'acronym', 'address', 'area', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'big', 'blink', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'content', 'data', 'datalist', 'dd', 'decorator', 'del', 'details', 'dfn', 'dialog', 'dir', 'div', 'dl', 'dt', 'element', 'em', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meter', 'nav', 'nobr', 'ol', 'optgroup', 'option', 'output', 'p', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'select', 'shadow', 'small', 'source', 'spacer', 'span', 'strike', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr', 'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr']);
 
   // SVG
   var svg = freeze(['svg', 'a', 'altglyph', 'altglyphdef', 'altglyphitem', 'animatecolor', 'animatemotion', 'animatetransform', 'audio', 'canvas', 'circle', 'clippath', 'defs', 'desc', 'ellipse', 'filter', 'font', 'g', 'glyph', 'glyphref', 'hkern', 'image', 'line', 'lineargradient', 'marker', 'mask', 'metadata', 'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialgradient', 'rect', 'stop', 'style', 'switch', 'symbol', 'text', 'textpath', 'title', 'tref', 'tspan', 'video', 'view', 'vkern']);
@@ -211,7 +209,7 @@
      * Version label, exposed for easier checks
      * if DOMPurify is up to date or not
      */
-    DOMPurify.version = '2.1.0';
+    DOMPurify.version = '2.2.3';
 
     /**
      * Array of elements that DOMPurify removed during sanitation.
@@ -228,7 +226,6 @@
     }
 
     var originalDocument = window.document;
-    var removeTitle = false;
 
     var document = window.document;
     var DocumentFragment = window.DocumentFragment,
@@ -344,8 +341,13 @@
     /* If `RETURN_DOM` or `RETURN_DOM_FRAGMENT` is enabled, decide if the returned DOM
      * `Node` is imported into the current `Document`. If this flag is not enabled the
      * `Node` will belong (its ownerDocument) to a fresh `HTMLDocument`, created by
-     * DOMPurify. */
-    var RETURN_DOM_IMPORT = false;
+     * DOMPurify.
+     *
+     * This defaults to `true` starting DOMPurify 2.2.0. Note that setting it to `false`
+     * might cause XSS from attacks hidden in closed shadowroots in case the browser
+     * supports Declarative Shadow: DOM https://web.dev/declarative-shadow-dom/
+     */
+    var RETURN_DOM_IMPORT = true;
 
     /* Try to return a Trusted Type object instead of a string, return a string in
      * case Trusted Types are not supported  */
@@ -417,7 +419,7 @@
       WHOLE_DOCUMENT = cfg.WHOLE_DOCUMENT || false; // Default false
       RETURN_DOM = cfg.RETURN_DOM || false; // Default false
       RETURN_DOM_FRAGMENT = cfg.RETURN_DOM_FRAGMENT || false; // Default false
-      RETURN_DOM_IMPORT = cfg.RETURN_DOM_IMPORT || false; // Default false
+      RETURN_DOM_IMPORT = cfg.RETURN_DOM_IMPORT !== false; // Default true
       RETURN_TRUSTED_TYPE = cfg.RETURN_TRUSTED_TYPE || false; // Default false
       FORCE_BODY = cfg.FORCE_BODY || false; // Default false
       SANITIZE_DOM = cfg.SANITIZE_DOM !== false; // Default true
@@ -567,11 +569,6 @@
         doc = new DOMParser().parseFromString(dirtyPayload, 'text/html');
       } catch (_) {}
 
-      /* Remove title to fix a mXSS bug in older MS Edge */
-      if (removeTitle) {
-        addToSet(FORBID_TAGS, ['title']);
-      }
-
       /* Use createHTMLDocument in case DOMParser is not available */
       if (!doc || !doc.documentElement) {
         doc = implementation.createHTMLDocument('');
@@ -589,18 +586,6 @@
       /* Work on whole document or just its body */
       return getElementsByTagName.call(doc, WHOLE_DOCUMENT ? 'html' : 'body')[0];
     };
-
-    /* Here we test for a broken feature in Edge that might cause mXSS */
-    if (DOMPurify.isSupported) {
-      (function () {
-        try {
-          var doc = _initDocument('<x/><title>&lt;/title&gt;&lt;img&gt;');
-          if (regExpTest(/<\/title/, doc.querySelector('title').innerHTML)) {
-            removeTitle = true;
-          }
-        } catch (_) {}
-      })();
-    }
 
     /**
      * _createIterator
@@ -697,8 +682,14 @@
         allowedTags: ALLOWED_TAGS
       });
 
+      /* Take care of an mXSS pattern using p, br inside svg, math */
+      if ((tagName === 'svg' || tagName === 'math') && currentNode.querySelectorAll('p, br, form, table, h1, h2, h3, h4, h5, h6').length !== 0) {
+        _forceRemove(currentNode);
+        return true;
+      }
+
       /* Detect mXSS attempts abusing namespace confusion */
-      if (!_isNode(currentNode.firstElementChild) && (!_isNode(currentNode.content) || !_isNode(currentNode.content.firstElementChild)) && regExpTest(/<[!/\w]/g, currentNode.innerHTML) && regExpTest(/<[!/\w]/g, currentNode.textContent)) {
+      if (!_isNode(currentNode.firstElementChild) && (!_isNode(currentNode.content) || !_isNode(currentNode.content.firstElementChild)) && regExpTest(/<[/\w]/g, currentNode.innerHTML) && regExpTest(/<[/\w]/g, currentNode.textContent)) {
         _forceRemove(currentNode);
         return true;
       }
@@ -785,7 +776,6 @@
       var attr = void 0;
       var value = void 0;
       var lcName = void 0;
-      var idAttr = void 0;
       var l = void 0;
       /* Execute a hook if present */
       _executeHook('beforeSanitizeAttributes', currentNode, null);
@@ -829,32 +819,7 @@
         }
 
         /* Remove attribute */
-        // Safari (iOS + Mac), last tested v8.0.5, crashes if you try to
-        // remove a "name" attribute from an <img> tag that has an "id"
-        // attribute at the time.
-        if (lcName === 'name' && currentNode.nodeName === 'IMG' && attributes.id) {
-          idAttr = attributes.id;
-          attributes = arraySlice(attributes, []);
-          _removeAttribute('id', currentNode);
-          _removeAttribute(name, currentNode);
-          if (arrayIndexOf(attributes, idAttr) > l) {
-            currentNode.setAttribute('id', idAttr.value);
-          }
-        } else if (
-        // This works around a bug in Safari, where input[type=file]
-        // cannot be dynamically set after type has been removed
-        currentNode.nodeName === 'INPUT' && lcName === 'type' && value === 'file' && hookEvent.keepAttr && (ALLOWED_ATTR[lcName] || !FORBID_ATTR[lcName])) {
-          continue;
-        } else {
-          // This avoids a crash in Safari v9.0 with double-ids.
-          // The trick is to first set the id to be empty and then to
-          // remove the attribute
-          if (name === 'id') {
-            currentNode.setAttribute(name, '');
-          }
-
-          _removeAttribute(name, currentNode);
-        }
+        _removeAttribute(name, currentNode);
 
         /* Did the hooks approve of the attribute? */
         if (!hookEvent.keepAttr) {
@@ -995,7 +960,7 @@
       if (IN_PLACE) ; else if (dirty instanceof Node) {
         /* If dirty is a DOM element, append to an empty document to avoid
            elements being stripped by the parser */
-        body = _initDocument('<!-->');
+        body = _initDocument('<!---->');
         importedNode = body.ownerDocument.importNode(dirty, true);
         if (importedNode.nodeType === 1 && importedNode.nodeName === 'BODY') {
           /* Node is already a body, use as is */
