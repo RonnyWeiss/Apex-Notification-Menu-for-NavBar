@@ -1,6 +1,6 @@
 {
     "name": "Notification Menu",
-    "version": "1.6.5",
+    "version": "25.03.17",
     "description": "This dynamic action plugin allows to render a notification menu which gets its information through an SQL statement. It also has many configuration options and an automatic refresh (if desired). Unfortunately, it is only available with the Universal Theme 1.1 in APEX 5.1.1 or above. If you want to use it in older Themes then you have to customize the CSS style.<p><b>Important clarification: My work in the development team of Oracle APEX is in no way related to my open source projects or the plug-ins here on apex.world! All plug-ins are built in my spare time and are not supported by Oracle!</b></p>",
     "keywords": ["oracle", "apex", "plugin", "dynamic action", "responsive", "notification"],
     "homepage": "https://github.com/RonnyWeiss/Apex-Notification-Menu-for-NavBar",
@@ -22,9 +22,9 @@
         "url": "https://github.com/RonnyWeiss/Apex-Notification-Menu-for-NavBar.git"
     },
     "oracle": {
-        "versions": ["12.2.0.1", "18.4.0.0", "19.0.0.0.0", "19.2.0.0.19", "21.0.0.0.0", "21.1.0.0.0", "21.1.0.0.1"],
+        "versions": ["18c", "19c", "21c", "23c", "23ai"],
         "apex": {
-            "versions": ["18.1.0.00.45", "18.2.0.00.12", "19.1.0.00.15", "19.2.0.00.18", "20.1.0.00.13", "20.2.0.00.20", "21.1.0", "21.2.0", "22.1.0", "22.2.0", "23.1.0"],
+            "versions": ["21.1", "21.2", "22.1", "22.2", "23.1", "23.2", "24.1", "24.2"],
             "plugin": {
                 "internalName": "APEX.NOTIFICATION",
                 "type": "dynamic action",
